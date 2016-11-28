@@ -5,7 +5,6 @@
 #include <typeinfo>
 #include <algorithm>
 #include <type_traits>
-//TODO
 #include "citizen.h"
 
 enum MonstType { mummy, vampire, zombie };
