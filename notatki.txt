@@ -1,0 +1,9 @@
+- Wszystko co dotąd
+- dry
+- ukryte prywatne składowe
+- nie dziedziczenie, tylko szablony
+- citizen, monster -ok. 50 linijek
+- smalltown - ok. 200 linijek
+- w czasie kompilacji: constexpr -trzeba użyć
+  - można rekurencję na szablonach
+- clang
