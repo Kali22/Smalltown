@@ -20,7 +20,7 @@ private:
 	
 public:
 	
-	Monster(T h, T a, T ap) : health(h), attackPower(ap), typeName(typeid(T).name()) {
+	Monster(T h, T ap) : health(h), attackPower(ap), typeName(typeid(T).name()) {
 		assert(h > 0);
 		assert(ap > 0);
 	}
@@ -30,7 +30,7 @@ public:
 	std::string getTypeName() const { return typeName; }
 	
 	void takeDamage(T damage) {
-		health = std::max(health - damage, 0);
+		health -= std::min(health, damage);
 	}
 	
 };
@@ -54,8 +54,9 @@ void attack(const M &monster, V &victim) {
 template<typename M, typename V, 
 	typename = typename std::enable_if_t<std::is_same<V, Sheriff<typename V::valueType>>::value>>
 void attack(M &monster, V &victim) {
-	victim.takeDamage(monster.getAttackPower());
+	//if (victim.getHealth() > 0) 
 	monster.takeDamage(victim.getAttackPower());
+	victim.takeDamage(monster.getAttackPower());
 }
 
 #endif //MONSTER_H
