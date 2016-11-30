@@ -2,21 +2,17 @@
 #define SMALLTOWN_H
 
 #include <iostream>
-#include <array>
-
+#include <vector>
+#include <tuple>
 #include "citizen.h"
 #include "monster.h"
-
-#include <tuple>
-
-//constexpr std::array<int, 47> fibs = produce_fibs<47>();// = produce_fibs(1, 2, 2, 47, {});
 
 template <typename M, typename U, U t0, U t1, typename... C>
 class SmallTown {
 
 private:
 	
-	//TODO const expr count limit for biggest F_n in U
+	//const expr count limit for biggest F_n in U
 	constexpr static size_t gen_fib_limit() {
 		U a = 0, b = 1, c = 1;
 		for (size_t i = 1; ; ++i) {
@@ -32,13 +28,34 @@ private:
 
 	// type U of time, N - max fib index to count, FN - curr fib index, 
 	// F1, F2 - last two fibs, Values - variadic table of counted fibs
-	/*template<size_t Limit, size_t FN, U F1, U F2, U... Values>
+	/*template<size_t FN, U F1, U F2, U... Values>
 		//typename = std::enable_if<(FN == N)>>
-	constexpr static std::array<U, Limit> gen_fibs() {
-		if (FN == Limit) return {Values...};//std::array<U, fib_limit>(Values...); //TODO
-		return gen_fibs<U, Limit, FN + 1, F1 + F2, F1, Values..., F2>();
+	constexpr static std::array<U, fib_limit> gen_fibs() {
+		if (FN == fib_limit) return U(Values)...;//std::array<U, fib_limit>(Values...);
+		return gen_fibs<std::min(fib_limit, FN + 1), F1 + F2, F1, Values..., F2>();
+	}*/
+	
+	
+	//template<size_t FN, U F1, U F2, U... Values>
+		//typename = std::enable_if<(FN == N)>>
+	/*constexpr static void gen_fibs() {
+		std::vector<U> temp;
+		U a = 0, b = 1, c = 1;
+		for (size_t i = 1; ; ++i) {
+			c = a + b;
+			if (c >= t1 || c < a) return;// temp;
+			fibs.push_back(c);
+			a = b;
+			b = c;
+			//std::cerr << c << "\n\n\n";
+		}
+		//if (FN == fib_limit) return U(Values)...;//std::array<U, fib_limit>(Values...);
+		//return gen_fibs<std::min(fib_limit, FN + 1), F1 + F2, F1, Values..., F2>();
 	}
-
+	
+	constexpr static std::vector<U>fibs{};// = gen_fibs();*/
+	
+	
 	//template<typename U, int N, int FN, U F1, U F2, U... Values,
 	//	typename = std::enable_if<(FN < N)>>
 	//constexpr std::array gen_fibs() {
@@ -46,29 +63,47 @@ private:
 	//	return gen_fibs<U, N, FN + 1, F1 + F2, F1, ...Values, F2>(); //TODO check folding f2 into values of next stage
 	//}
 
-	//template <typename U>
-	constexpr static std::array<U, fib_limit>fibs = 
-		gen_fibs<fib_limit, (size_t)1, 1, 1>();
-	*/
-	constexpr static std::array<U, fib_limit>fibs{};
+	//constexpr static std::vector<U>fibs = gen_fibs();
 	
-	template<size_t Limit, size_t FN, U F1, U F2>
-		//typename = std::enable_if<(FN == N)>>
-	constexpr static void gen_fibs() {
-		if (FN == Limit) return;
-		fibs[FN] = F1;//{Values...};//std::array<U, fib_limit>(Values...); //TODO
-		gen_fibs<U, Limit, FN + 1, F1 + F2, F1>();
+	/*
+	template<size_t FN, typename U, U F1, U F2, U ... args>
+	constexpr struct array_{
+		if (FN < fib_limit)
+			array
+			constexpr static U data[sizeof...(args)];
+	};
+
+	template<typename U, U ... args>
+	U array_<fib_limit, U, 1, 1, args...>::data[fib_limit] = {U(args)...};
+	*/
+	
+	
+	
+	
+	
+	/*
+	template<size_t FN, U F1, U F2, U... temp>
+	constexpr static std::array<U, fib_limit> gen_fibs() {
+		if (FN == fib_limit) return {temp...};
+		//fibs[FN] = F1;//{Values...};//std::array<U, fib_limit>(Values...); //TODO
+		return gen_fibs<std::min(FN + 1, fib_limit), F1 + F2, F1, temp..., F2>();
 	}
+	
+	
+	constexpr static std::array<U, fib_limit>fibs = gen_fibs<1, 1, 1>();// = {1, 2};// = std::array::fill(0);
+	*/
+	
 	
 	M monster;
 	std::tuple<C...> citizens;
-	U time = t0; 	//we've got: t0, t1
+	U time = t0;                                   //we've got: t0, t1
 	static const size_t citizensCount = sizeof...(C);
 	size_t livingCitizens = citizensCount;
 	
-	bool ifAttack() {
+	bool ifAttack() const {
 		for(size_t i = 0; i < fib_limit; i++) {
-			if (time == fibs[i]) return true;
+			//if (time == fibs[i]) TODO uncomment
+			return true;
 		}
 		return false;
 	}
@@ -81,24 +116,21 @@ private:
 	
 	template <size_t i>//, typename = std::enable_if<(i < citizensCount)>>
 	void attackAll() {
-		if(i < citizensCount) {
-			if ((std::get<i>(citizens)).getHealth() > 0) {
-				attack(monster, std::get<i>(citizens));//TODO check
-				if ((std::get<i>(citizens)).getHealth() == 0)
-					livingCitizens--;
-			}
-			attackAll<i + 1>();
+		auto& cit = std::get<i>(citizens);
+		if (cit.getHealth() > 0) {
+			attack(monster, cit);
+			if (cit.getHealth() == 0)
+				livingCitizens--;
+		}
+		if(i < citizensCount - 1) {
+			attackAll<std::min(i + 1, citizensCount - 1)>();
 		}
 	}
 
 public:
 	SmallTown(M monst, C... cits) 
 	: monster(monst)
-	, citizens(cits...)
-	//, allCitizens(std::tuple_size<decltype(cits)>::value)
-	//, allCitizens() //TODO check
-	//, livingCitizens(allCitizens) 
-	{
+	, citizens(cits...) {
 	    static_assert(std::is_arithmetic<U>::value, 
 	                  "U is not an arithmetic type.");
 		static_assert(t1 >= t0 && t0 >= 0, "Wrong init times");
@@ -107,13 +139,16 @@ public:
 	
 	//	std::tuple<std::string, T, size_t>
 	auto getStatus() const {
-		return std::forward_as_tuple( //TODO make_tuple, not auto return type
-			monster.getTypeName(), //TODO check result
+		return std::make_tuple(
+			monster.getTypeName(),
 			monster.getHealth(),
 			livingCitizens);
 	}
 	
 	void tick(U timeStep) {
+		/*for(int i = 0; i < fib_limit; i++) {
+			//std::cout << fibs[i] << ' ';
+		}*/
 		if (livingCitizens == 0) {
 			if (monster.getHealth() > 0) {
 				std::cout << "MONSTER WON\n";

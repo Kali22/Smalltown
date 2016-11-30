@@ -5,6 +5,7 @@
 #include <typeinfo>
 #include <algorithm>
 #include <type_traits>
+#include <cassert>
 #include "citizen.h"
 
 enum MonstType { mummy, vampire, zombie };
@@ -54,7 +55,6 @@ void attack(const M &monster, V &victim) {
 template<typename M, typename V, 
 	typename = typename std::enable_if_t<std::is_same<V, Sheriff<typename V::valueType>>::value>>
 void attack(M &monster, V &victim) {
-	//if (victim.getHealth() > 0) 
 	monster.takeDamage(victim.getAttackPower());
 	victim.takeDamage(monster.getAttackPower());
 }
