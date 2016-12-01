@@ -1,167 +1,113 @@
+//Batosz Burny, Maciej Gontar
 #ifndef SMALLTOWN_H
 #define SMALLTOWN_H
 
 #include <iostream>
-#include <vector>
+#include <array>
 #include <tuple>
 #include "citizen.h"
 #include "monster.h"
 
-template <typename M, typename U, U t0, U t1, typename... C>
+/* template for SmallTown, with given type of monster,
+ * type of time, starting time, number of hours in a day
+ * and list of types of citizens
+ */
+template<typename M, typename U, U t0, U t1, typename... C>
 class SmallTown {
 
 private:
-	
-	//const expr count limit for biggest F_n in U
-	constexpr static size_t gen_fib_limit() {
-		U a = 0, b = 1, c = 1;
-		for (size_t i = 1; ; ++i) {
-			c = a + b;
-			if (c >= t1 || c < 0) return i; //TODO check
-			a = b;
-			b = c;
-			//std::cerr << c << "\n\n\n";
-		}
-	}
-	
-	constexpr static size_t fib_limit = gen_fib_limit(); 
-
-	// type U of time, N - max fib index to count, FN - curr fib index, 
-	// F1, F2 - last two fibs, Values - variadic table of counted fibs
-	/*template<size_t FN, U F1, U F2, U... Values>
-		//typename = std::enable_if<(FN == N)>>
-	constexpr static std::array<U, fib_limit> gen_fibs() {
-		if (FN == fib_limit) return U(Values)...;//std::array<U, fib_limit>(Values...);
-		return gen_fibs<std::min(fib_limit, FN + 1), F1 + F2, F1, Values..., F2>();
-	}*/
-	
-	
-	//template<size_t FN, U F1, U F2, U... Values>
-		//typename = std::enable_if<(FN == N)>>
-	/*constexpr static void gen_fibs() {
-		std::vector<U> temp;
-		U a = 0, b = 1, c = 1;
-		for (size_t i = 1; ; ++i) {
-			c = a + b;
-			if (c >= t1 || c < a) return;// temp;
-			fibs.push_back(c);
-			a = b;
-			b = c;
-			//std::cerr << c << "\n\n\n";
-		}
-		//if (FN == fib_limit) return U(Values)...;//std::array<U, fib_limit>(Values...);
-		//return gen_fibs<std::min(fib_limit, FN + 1), F1 + F2, F1, Values..., F2>();
-	}
-	
-	constexpr static std::vector<U>fibs{};// = gen_fibs();*/
-	
-	
-	//template<typename U, int N, int FN, U F1, U F2, U... Values,
-	//	typename = std::enable_if<(FN < N)>>
-	//constexpr std::array gen_fibs() {
-	//	//if (N == FN) 
-	//	return gen_fibs<U, N, FN + 1, F1 + F2, F1, ...Values, F2>(); //TODO check folding f2 into values of next stage
-	//}
-
-	//constexpr static std::vector<U>fibs = gen_fibs();
-	
-	/*
-	template<size_t FN, typename U, U F1, U F2, U ... args>
-	constexpr struct array_{
-		if (FN < fib_limit)
-			array
-			constexpr static U data[sizeof...(args)];
-	};
-
-	template<typename U, U ... args>
-	U array_<fib_limit, U, 1, 1, args...>::data[fib_limit] = {U(args)...};
-	*/
-	
-	
-	
-	
-	
-	/*
-	template<size_t FN, U F1, U F2, U... temp>
-	constexpr static std::array<U, fib_limit> gen_fibs() {
-		if (FN == fib_limit) return {temp...};
-		//fibs[FN] = F1;//{Values...};//std::array<U, fib_limit>(Values...); //TODO
-		return gen_fibs<std::min(FN + 1, fib_limit), F1 + F2, F1, temp..., F2>();
-	}
-	
-	
-	constexpr static std::array<U, fib_limit>fibs = gen_fibs<1, 1, 1>();// = {1, 2};// = std::array::fill(0);
-	*/
-	
-	
-	M monster;
-	std::tuple<C...> citizens;
-	U time = t0;                                   //we've got: t0, t1
-	static const size_t citizensCount = sizeof...(C);
-	size_t livingCitizens = citizensCount;
-	
-	bool ifAttack() const {
-		for(size_t i = 0; i < fib_limit; i++) {
-			//if (time == fibs[i]) TODO uncomment
-			return true;
-		}
-		return false;
-	}
-	
-	//template <size_t N, size_t citizensCount, typename = std::enable_if<(N == citizensCount)>>
-	//void attackAll(M& monster) {}
-	
-	//template <size_t i>
-	//void attackAll();
-	
-	template <size_t i>//, typename = std::enable_if<(i < citizensCount)>>
-	void attackAll() {
-		auto& cit = std::get<i>(citizens);
-		if (cit.getHealth() > 0) {
-			attack(monster, cit);
-			if (cit.getHealth() == 0)
-				livingCitizens--;
-		}
-		if(i < citizensCount - 1) {
-			attackAll<std::min(i + 1, citizensCount - 1)>();
-		}
-	}
+    //CONSTEXPR class components
+    //count limit for biggest distinct fibonacci number no bigger than t1
+    constexpr static size_t gen_fib_limit() {
+        U a = 0, b = 1;
+        for (size_t i = 0;; ++i) {
+            U c = a + b;
+            if (c > t1 || c < a) return i;
+            a = b;
+            b = c;
+        }
+    }
+    
+    constexpr static size_t fib_limit = gen_fib_limit();
+    
+    //generating fibonacci numbers up to (fib_limit)-th distinct one
+    template<size_t N, U F1, U F2, U... temp>
+    constexpr static typename std::enable_if_t<(N == fib_limit),
+            const std::array<U, fib_limit>> gen_fibs() {
+        return std::array<U, fib_limit>{{temp..., F1}};
+    }
+    
+    template<size_t N, U F1, U F2, U... temp>
+    constexpr static typename std::enable_if_t<(N != fib_limit),
+            std::array<U, fib_limit>> gen_fibs() {
+        return gen_fibs<N + 1, F1 + F2, F1, temp..., F1>();
+    }
+    
+    //an alias for comfort of usage
+    constexpr static const std::array<U, fib_limit> &fibs = gen_fibs<1, 1, 1>();
+    
+    
+    //normal class components
+    M monster;
+    std::tuple<C...> citizens;
+    U time = t0;
+    static const size_t citizensCount = sizeof...(C);
+    size_t livingCitizens = citizensCount;
+    
+    //helper function for determining if monster's attack should occur
+    bool ifAttack() const {
+        return std::binary_search(fibs.begin(), fibs.end(), time);
+    }
+    
+    //template of helper function to attack all (alive) citizens in the town
+    template<size_t i>
+    void attackAll() {
+        auto &cit = std::get<i>(citizens);
+        if (cit.getHealth() > 0) {
+            attack(monster, cit);
+            if (cit.getHealth() == 0)
+                livingCitizens--;
+        }
+        if (i < citizensCount - 1) {
+            attackAll<std::min(i + 1, citizensCount - 1)>();
+        }
+    }
 
 public:
-	SmallTown(M monst, C... cits) 
-	: monster(monst)
-	, citizens(cits...) {
-	    static_assert(std::is_arithmetic<U>::value, 
-	                  "U is not an arithmetic type.");
-		static_assert(t1 >= t0 && t0 >= 0, "Wrong init times");
-		//static_assert(livingCitizens >= 0, "No living citizens"); so what?
-	}
-	
-	//	std::tuple<std::string, T, size_t>
-	auto getStatus() const {
-		return std::make_tuple(
-			monster.getTypeName(),
-			monster.getHealth(),
-			livingCitizens);
-	}
-	
-	void tick(U timeStep) {
-		/*for(int i = 0; i < fib_limit; i++) {
-			//std::cout << fibs[i] << ' ';
-		}*/
-		if (livingCitizens == 0) {
-			if (monster.getHealth() > 0) {
-				std::cout << "MONSTER WON\n";
-			} else {
-				std::cout << "DRAW\n";
-			}
-		} else if (monster.getHealth() == 0) {
-			std::cout << "CITIZENS WON\n";
-		}
-		if (ifAttack()) attackAll<0>();
-		time += timeStep;
-		time %= t1;
-	}
+    //constructor with asserts
+    SmallTown(M monst, C... cits)
+            : monster(monst), citizens(cits...) {
+        static_assert(std::is_arithmetic<U>::value,
+                      "U is not an arithmetic type.");
+        static_assert(t1 >= t0 && t0 >= 0, "Wrong init times");
+    }
+    
+    auto getStatus() const {
+        return std::make_tuple(
+                std::string(typeid(monster).name()),
+                monster.getHealth(),
+                livingCitizens
+        );
+    }
+    
+    void tick(U timeStep) {
+        if (livingCitizens == 0) {
+            if (monster.getHealth() > 0) {
+                std::cout << "MONSTER WON\n";
+            } else {
+                std::cout << "DRAW\n";
+            }
+        } else if (monster.getHealth() == 0) {
+            std::cout << "CITIZENS WON\n";
+        }
+        
+        if (ifAttack() && monster.getHealth() > 0) attackAll<0>();
+        time += timeStep;
+        //special case for an overflow of unsigned types (to avoid dividing by 0)
+        if (t1 + 1 > t1) {
+            time %= (t1 + 1);
+        }
+    }
 };
 
 #endif //SMALLTOWN_H
