@@ -37,7 +37,7 @@ public:
     T getAttackPower() const { return attackPower; }
     
     void takeDamage(T damage) {
-		assert(damage >= 0);
+        assert(damage >= 0);
         health -= std::min(health, damage);
     }
     

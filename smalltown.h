@@ -17,10 +17,10 @@ class SmallTown {
 
 private:
     //CONSTEXPR class components
-    //count limit for biggest distinct fibonacci number no bigger than t1
-    constexpr static size_t gen_fib_limit() {
-        U a = 0, b = 1;
-        for (size_t i = 0;; ++i) {
+    //count limit for biggest distinct fibonacci number no bigger than t1 ({1} for t1 = 0)
+    constexpr static size_t genFibLimit() {
+        U a = 1, b = 1;
+        for (size_t i = 1;; ++i) {
             U c = a + b;
             if (c > t1 || c < a) return i;
             a = b;
@@ -28,23 +28,23 @@ private:
         }
     }
     
-    constexpr static size_t fib_limit = gen_fib_limit();
+    constexpr static size_t fibLimit = genFibLimit();
     
     //generating fibonacci numbers up to (fib_limit)-th distinct one
     template<size_t N, U F1, U F2, U... temp>
-    constexpr static typename std::enable_if_t<(N == fib_limit),
-            const std::array<U, fib_limit>> gen_fibs() {
-        return std::array<U, fib_limit>{{temp..., F1}};
+    constexpr static typename std::enable_if_t<(N == fibLimit),
+            const std::array<U, fibLimit>> genFibs() {
+        return std::array<U, fibLimit>{{temp..., F1}};
     }
     
     template<size_t N, U F1, U F2, U... temp>
-    constexpr static typename std::enable_if_t<(N != fib_limit),
-            std::array<U, fib_limit>> gen_fibs() {
-        return gen_fibs<N + 1, F1 + F2, F1, temp..., F1>();
+    constexpr static typename std::enable_if_t<(N != fibLimit),
+            std::array<U, fibLimit>> genFibs() {
+        return genFibs<N + 1, F1 + F2, F1, temp..., F1>();
     }
     
     //an alias for comfort of usage
-    constexpr static const std::array<U, fib_limit> &fibs = gen_fibs<1, 1, 1>();
+    constexpr static const std::array<U, fibLimit> &fibs = genFibs<1, 1, 1>();
     
     
     //normal class components
